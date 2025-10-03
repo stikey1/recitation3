@@ -32,7 +32,54 @@ bool CompareFiles(const std::string& p1, const std::string& p2) {
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Test Cases
 /////////////////////////////////////////////////////////////////////////////////////////////
-
+TEST_CASE("No 2 same accounts", "[no-dup]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30),
+                    std::invalid_argument);
+}
+TEST_CASE("Invalid PIN", "[inv-pin]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.CheckBalance(12345678, 1111), std::invalid_argument);
+  REQUIRE_THROWS_AS(atm.WithdrawCash(12345678, 1111, 20),
+                    std::invalid_argument);
+  REQUIRE_THROWS_AS(atm.DepositCash(12345678, 1111, 20), std::invalid_argument);
+  REQUIRE_THROWS_AS(atm.PrintLedger("./prompt.txt", 12345678, 1111),
+                    std::invalid_argument);
+}
+TEST_CASE("Insufficient Funds", "[ins-funds]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.WithdrawCash(12345678, 1234, 400), std::runtime_error);
+}
+TEST_CASE("Negative Deposit", "[neg-dep]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.DepositCash(12345678, 1234, -20),
+                    std::invalid_argument);
+}
+TEST_CASE("Negative Withdraw", "[neg-with]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.WithdrawCash(12345678, 1234, -20),
+                    std::invalid_argument);
+}
+TEST_CASE("Check Balance", "[check-bal]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE(atm.CheckBalance(12345678, 1234) == 300.30);
+  atm.DepositCash(12345678, 1234, 200);
+  REQUIRE(atm.CheckBalance(12345678, 1234) == 500.30);
+  atm.WithdrawCash(12345678, 1234, 100);
+  REQUIRE(atm.CheckBalance(12345678, 1234) == 400.30);
+}
+TEST_CASE("Ledger File Creation", "[led-file]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.PrintLedger("./prompt.txt", 12345678, 1111),
+                    std::invalid_argument);
+}
 TEST_CASE("Example: Create a new account", "[ex-1]") {
   Atm atm;
   atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
